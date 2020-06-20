@@ -2,6 +2,9 @@
 #define UTILS_H
 #include <jni.h>
 #include <unistd.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 typedef unsigned long DWORD;
 static uintptr_t libBase;
@@ -25,7 +28,7 @@ DWORD findLibrary(const char *library) {
     }
 
     while( fgets( buffer, sizeof(buffer), fp ) ) {
-        if( strstr( buffer, library ) ){
+        if(strstr( buffer, library ) ){
             address = (DWORD)strtoul( buffer, NULL, 16 );
             goto done;
         }

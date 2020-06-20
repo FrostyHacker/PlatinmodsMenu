@@ -26,7 +26,7 @@
 #define lprintf(format, ...) \
     MSLog(MSLogLevelNotice, format, ## __VA_ARGS__)
 
-#define MSDebug false
+extern "C" bool MSDebug;
 void MSLogHexEx(const void *vdata, size_t size, size_t stride, const char *mark = 0);
 void MSLogHex(const void *vdata, size_t size, const char *mark = 0);
 

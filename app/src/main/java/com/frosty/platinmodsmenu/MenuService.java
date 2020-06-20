@@ -18,6 +18,7 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 public class MenuService extends Service {
@@ -180,9 +185,9 @@ public class MenuService extends Service {
 
     private WindowManager windowManager;
 
-    public native void changeToggle(int i);
+    public native void Changes(int feature, int value);
 
-    private native String[] getListFT();
+    private native String[] getFeatureList();
 
     private void AddAboutInfo() {
         AddAboutText("------------------------------------");
@@ -255,8 +260,61 @@ public class MenuService extends Service {
 
     private void AddModifications() {
         UpdateConfig();
+        String[] listFT = getFeatureList();
+        for (int i = 0; i < listFT.length; i++) {
+            final int feature = i;
+            String str = listFT[i];
+            if (str.contains("Toggle_")) {
+                AddToggle(str.replace("Toggle_", ""), new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                        Changes(feature, 0);
+                    }
+                });
+            } else if (str.contains("SeekBar_")) {
+                String[] split = str.split("_");
+                AddSliderOptions(split[1], Integer.parseInt(split[2]), Integer.parseInt(split[3]), new SeekBar.OnSeekBarChangeListener() {
+                    @Override
+                    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                        Changes(feature, i);
+                    }
+
+                    @Override
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+
+                    }
+
+                    @Override
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+
+                    }
+                });
+            } else if (str.contains("Category_")) {
+                AddText(str.replace("Category_", ""),"#DEEDF6");
+            } else if (str.contains("Button_")) {
+                AddButton(str.replace("Button_", ""), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Changes(feature, 0);
+                    }
+                });
+            } else if (str.contains("Spinner_")) {
+                AddSpinner(str.replace("Spinner_", ""), new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                        Changes(feature, i);
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
+
+            }
+        }
         //AddAboutText("[-] Visual Hack");
-        final String[] listFT = getListFT();
+       /* final String[] listFT = getFeatureList();
         for (int i2 = 0; i2 < listFT.length; i2++) {
             final int l2 = i2;
             AddToggle(listFT[i2], new CompoundButton.OnCheckedChangeListener() {
@@ -270,7 +328,7 @@ public class MenuService extends Service {
                     }
                 }
             });
-        }
+        }*/
 
 
     }
@@ -727,12 +785,13 @@ public class MenuService extends Service {
         seekBar.setProgress(paramInt1);
     }
 
-    private void AddSpinner(String paramString, String[] paramArrayOfString, AdapterView.OnItemSelectedListener paramOnItemSelectedListener) {
+    private void AddSpinner(String feature, AdapterView.OnItemSelectedListener paramOnItemSelectedListener) {
+        List<String> list = new LinkedList<>(Arrays.asList(feature.split("_")));
         this.spinnerAdded++;
         TextView textView = new TextView((Context)this);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("  ");
-        stringBuilder.append(paramString);
+        stringBuilder.append(list.get(0));
         textView.setText(stringBuilder.toString());
         textView.setTextSize(this.textSize);
         int[] arrayOfInt = textColor;
@@ -740,9 +799,10 @@ public class MenuService extends Service {
         textView.setLayoutParams((ViewGroup.LayoutParams)new RelativeLayout.LayoutParams(-1, -2));
         Spinner spinner = new Spinner((Context)this);
         spinner.setLayoutParams((ViewGroup.LayoutParams)new RelativeLayout.LayoutParams(-1, -2));
-        //ArrayAdapter arrayAdapter = new ArrayAdapter((Context)this, 17367048, (Object[])paramArrayOfString);
-        // arrayAdapter.setDropDownViewResource(17367048);
-        // spinner.setAdapter((SpinnerAdapter)arrayAdapter);
+        list.remove(0);
+        ArrayAdapter arrayAdapter = new ArrayAdapter((Context)this, android.R.layout.simple_spinner_item, list);
+        arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+         spinner.setAdapter((SpinnerAdapter)arrayAdapter);
         spinner.setOnItemSelectedListener(paramOnItemSelectedListener);
         spinner.getSelectedItemPosition();
         this.modHolder.addView((View)textView);
@@ -756,8 +816,9 @@ public class MenuService extends Service {
         textView.setText(paramString1);
         textView.setTextColor(Color.parseColor(paramString2));
         textView.setTextSize(this.textSize);
+        textView.setGravity(Gravity.CENTER);
         textView.setPadding(15, 0, 0, 0);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(-2, -2);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(MATCH_PARENT, -2);
         layoutParams.setMargins(this.width / 100, 0, 0, 0);
         textView.setLayoutParams((ViewGroup.LayoutParams)layoutParams);
         this.modHolder.addView((View)textView);
@@ -765,7 +826,7 @@ public class MenuService extends Service {
 
     private void AddToggle(String paramString, CompoundButton.OnCheckedChangeListener paramOnCheckedChangeListener) {
         this.toggleAdded++;
-        final Switch switch_ = new Switch((Context)this);
+        final Switch switch_ = new Switch(this);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("  ");
         stringBuilder.append(paramString);
@@ -784,7 +845,7 @@ public class MenuService extends Service {
         });
         switch_.setOnCheckedChangeListener(paramOnCheckedChangeListener);
         switch_.setLayoutParams((ViewGroup.LayoutParams)new RelativeLayout.LayoutParams(-1, -2));
-        this.modHolder.addView((View)switch_);
+        this.modHolder.addView(switch_);
         if (menuRestarted && toggleValue[this.toggleAdded]) {
             switch_.setChecked(true);
             arrayOfInt = toggleOnColor;

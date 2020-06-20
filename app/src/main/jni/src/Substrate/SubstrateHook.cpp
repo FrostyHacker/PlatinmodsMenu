@@ -18,7 +18,7 @@
  * along with Substrate.  If not, see <http://www.gnu.org/licenses/>.
 **/
 /* }}} */
-#include <stdlib.h>
+
 #define SubstrateInternal
 #include "CydiaSubstrate.h"
 
@@ -90,7 +90,7 @@ X 4790  ldr r*,[pc,#*]    */
 #define T1$ldr_rt_$rn_im$(rt, rn, im) /* ldr rt, [rn, #im] */ \
     (0xf850 | ((im < 0 ? 0 : 1) << 7) | (rn))
 #define T2$ldr_rt_$rn_im$(rt, rn, im) /* ldr rt, [rn, #im] */ \
-    (((rt) << 12) | abs((int)im))
+    (((rt) << 12) | abs((int)(im)))
 
 #define T1$mrs_rd_apsr(rd) /* mrs rd, apsr */ \
     (0xf3ef)
@@ -121,7 +121,7 @@ static inline bool T$pcrel$b(uint16_t ic) {
 }
 
 static inline bool T2$pcrel$b(uint16_t *ic) {
-    return (ic[0] & 0xf800) == 0xf000 && ((ic[1] & 0xd000) == 0x9000 || (ic[1] & 0xd000) == 0x8000 && (ic[0] & 0x0380) != 0x0380);
+    return (ic[0] & 0xf800) == 0xf000 && (((ic[1] & 0xd000) == 0x9000 || (ic[1] & 0xd000) == 0x8000) && (ic[0] & 0x0380) != 0x0380);
 }
 
 static inline bool T$pcrel$bl(uint16_t *ic) {
@@ -924,8 +924,11 @@ static void SubstrateHookFunction(SubstrateProcessRef process, void *symbol, voi
 #endif
 
 _extern void MSHookFunction(void *symbol, void *replace, void **result) {
+#if defined(__i386__) || defined(__x86_64__) || defined(__arm__)
      SubstrateHookFunction(NULL, symbol, replace, result);
+#endif
 }
+
 
 #if defined(__APPLE__) && defined(__arm__)
 _extern void _Z14MSHookFunctionPvS_PS_(void *symbol, void *replace, void **result) {
