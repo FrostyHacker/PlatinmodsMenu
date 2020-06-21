@@ -1192,7 +1192,7 @@ public class MenuService extends Service {
     private void CustomizeMenu() {
         this.gameName = "Test Menu";
         this.gameVersion = "Version 1";
-        this.modCredits = "Created by Aimar";
+        this.modCredits = "Created by ";
         VIP = true;
         this.modResource = "";
         this.modYT = "";
