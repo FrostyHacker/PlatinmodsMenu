@@ -313,24 +313,6 @@ public class MenuService extends Service {
 
             }
         }
-        //AddAboutText("[-] Visual Hack");
-       /* final String[] listFT = getFeatureList();
-        for (int i2 = 0; i2 < listFT.length; i2++) {
-            final int l2 = i2;
-            AddToggle(listFT[i2], new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton param1CompoundButton, boolean isChecked) {
-                    if (isChecked) {
-                        changeToggle(l2);
-                    }
-                    else
-                    {
-                        changeToggle(l2);
-                    }
-                }
-            });
-        }*/
-
-
     }
 
     private void AddMultipliers(String paramString1, String paramString2, String paramString3, View.OnClickListener paramOnClickListener1, View.OnClickListener paramOnClickListener2) {
